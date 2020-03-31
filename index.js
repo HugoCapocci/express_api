@@ -21,11 +21,8 @@ v1.get('/message/:id', async (request, response) => {
     const quote = quoteArray.find(function(currentQuote) {
         return currentQuote.id == id;
     })
-
-    if(!quote) {
-        response.sendStatus(404)
-    }
-    response.send(quote);
+    // Opération ternaire
+    quote ? response.send(quote) : response.sendStatus(404);
 })
 
 app.listen(3000, () => {
