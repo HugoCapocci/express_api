@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon index.js"
   },
   "author": "Hugo Capocci",
   "license": "ISC",
@@ -15,5 +15,9 @@
     "url": "https://github.com/HugoCapocci/express_api/issues"
   },
   "homepage": "https://github.com/HugoCapocci/express_api#readme",
-  "description": ""
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
