@@ -21,3 +21,7 @@ GET	     | Récuperation d'un seul message	    | /api/v1/message/{id}
 POST	 | Creation d'un message	            | /api/v1/message
 PUT	     | Modifier un message	                | /api/v1/message/{id}
 DELETE	 | Effacer un message            	    | /api/v1/message/{id}
+
+## Packages
+- express
+- body-parser
