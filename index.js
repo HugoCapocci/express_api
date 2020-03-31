@@ -14,8 +14,18 @@ v1.get('/message', async (request, response) => {
 
 v1.get('/message/:id', async (request, response) => {
     const quotes = await fs.readFile('./data/quotes.json');
+    const quoteArray = JSON.parse(quotes);
+    
     // récupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
+    const quote = quoteArray.find(function(currentQuote) {
+        return currentQuote.id == id;
+    });
+    if (!quote) {
+        response.sendStatus(404);
+    } else {
+        response.send(quote);
+    }
 })
 
 app.listen(3000, () => {
