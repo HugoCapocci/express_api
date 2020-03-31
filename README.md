@@ -25,3 +25,5 @@ DELETE	 | Effacer un message            	    | /api/v1/message/{id}
 ## Packages
 - express
 - body-parser
+- mongodb
+- dotenv

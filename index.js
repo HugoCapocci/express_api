@@ -3,6 +3,11 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
+require('dotenv').config();
+
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service');
+const MessageService = new MessageService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -27,7 +32,7 @@ v1.get('/message/:id', async (request, response) => {
     quote ? response.send(quote) : response.sendStatus(404);
 });
 
-v1.post('/message', async (request, response) => {
+v1.post('/message', basicAuth, async (request, response) => {
     /* const message = request.body;
     // un message est valide s'il a un auteur et une citation
     console.log('message?', message);
@@ -45,16 +50,9 @@ v1.post('/message', async (request, response) => {
     
     if (!isValid) return response.sendStatus(400);
 
-    const quotes = await fs.readFile('./data/quotes.json');
-    if (!quotes) return response.sendStatus(500);
+    // on sauvegarde dans Mongo
+    // const createdMessage = 
 
-    const quoteArray = JSON.parse(quotes);
-    quoteArray.sort((quoteA, quoteB) => quoteB.id - quoteA.id);
-    /* équivalent de: function(quoteA, quoteB) {
-        return quoteB - quoteA;
-    }
-    */
-    message.id = quoteArray[0].id + 1;
     response.send(message);
 });
 
