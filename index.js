@@ -3,8 +3,11 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
+require('dotenv').config();
 
 const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service');
+const messageService = new MessageService;
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -47,18 +50,10 @@ v1.post('/message', basicAuth, async (request, response) => {
 
     //Si pas valide
     if (!isValid) return response.sendStatus(400);
-    const quoteArray = JSON.parse(quotes);
-
-    /* 
-    équivalent de fonction (quoteA, quoteB) {
-        return quoteB - quoteA;
-    }
-    */
-    quoteArray.sort((quoteA, quoteB) => quoteB.id - quoteA.id);
-   
-    //Si valide : renvoit l'élément créé
-    message.id = quoteArray[0].id + 1;
-    response.send(message);
+    
+    // On sauvegarde dans Mongo !
+    const createdMessage = messageService.createMessage(message)
+    response.send(createdMessage);
 })
 
 app.listen(3000, () => {
