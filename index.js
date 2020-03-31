@@ -40,6 +40,8 @@ v1.post('/message', async (request, response)=>{
     if (!isValid) return response.sendStatus(400);
 
     const quotes = await fs.readFile('./data/quotes.json');
+    if (!quotes) return response.sendStatus(500);
+
     const quoteArray = JSON.parse(quotes);
     quoteArray.sort((quoteA,quoteB)=>quoteB.id-quoteA.id);
     /*équivalent de : function(quoteA,quoteB){
