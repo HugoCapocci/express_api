@@ -8,11 +8,25 @@ app.use('/api/v1', v1);
 // request : requête HTTP (reçu du client)
 // response : réponse HTTP (à envoyer au client, en retour)
 v1.get('/message', async (request, response) => {
-
     const quotes = await fs.readFile('./data/quotes.json');
-    response.send(quotes);
-
+    response.send(JSON.parse(quotes));
 });
+
+v1.get('/message/:id', async (request, response) => {
+    const quotes = await fs.readFile('./data/quotes.json');
+    const quoteArray = JSON.parse(quotes);
+
+    // Récupérer la citation par rapport à l'ID transmis
+    const id = request.params.id;
+    const quote = quoteArray.find(function(currentQuote) {
+        return currentQuote.id == id;
+    })
+
+    if(!quote) {
+        response.sendStatus(404)
+    }
+    response.send(quote);
+})
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
