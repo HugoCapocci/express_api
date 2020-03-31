@@ -18,6 +18,10 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "express": "^4.17.1"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "install": "^0.13.0",
+    "mongodb": "^3.5.5",
+    "npm": "^6.14.4"
   }
 }
