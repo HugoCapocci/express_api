@@ -1,6 +1,8 @@
 import express from 'express';
 import { promises as fs } from 'fs';
 
+import basicAuth from './middleware/basic-auth.js';
+
 const app = express();
 const v1 = express.Router();
 
@@ -23,7 +25,7 @@ v1.get('/message/:id', async (req, res) => {
     !quote ? res.sendStatus(404) : res.send(quote);
 });
 
-v1.post('/message', async (req, res) => {
+v1.post('/message', basicAuth, async (req, res) => {
     const message = req.body;
     const isValid = message.quote && message.author
     if (!isValid) return res.sendStatus(400);
