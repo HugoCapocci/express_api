@@ -15,5 +15,8 @@
     "url": "https://github.com/HugoCapocci/express_api/issues"
   },
   "homepage": "https://github.com/HugoCapocci/express_api#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
