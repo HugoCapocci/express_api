@@ -22,12 +22,7 @@ v1.get('/message/:id', async (request, response)=>{
     const quote = quoteArray.find(function(currentQuote){
         return currentQuote.id == id;
     });
-    if(!quote){
-        response.sendStatus(404);
-    }
-    else{
-        response.send(quote);
-    }
+    quote ? response.send(quote) : response.sendStatus(404) ;
 
 })
 
