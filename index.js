@@ -4,6 +4,8 @@ const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+
 // toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -30,7 +32,7 @@ v1.get('/message/:id', async (request, response) => {
     quote ? response.send(quote) : response.sendStatus(404);
 });
 
-v1.post('/message', async (request, response) => {
+v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
 
     // un message  est valide si il a un auteur et une citation
