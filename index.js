@@ -4,6 +4,8 @@ const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
@@ -11,11 +13,13 @@ app.use('/api/v1', v1);
 // request : requête HTTP (reçu du client)
 // response : réponse HTTP (à envoyer au client, en retour)
 v1.get('/message', async (request, response) => {
+
     const quotes = await fs.readFile('./data/quotes.json');
     response.send(JSON.parse(quotes));
 });
 
 v1.get('/message/:id', async (request, response) => {
+
     const quotes = await fs.readFile('./data/quotes.json');
     const quoteArray = JSON.parse(quotes);
 
@@ -28,10 +32,12 @@ v1.get('/message/:id', async (request, response) => {
     quote ? response.send(quote) : response.sendStatus(404);
 })
 
-v1.post('/message', async (request, response) => {
+v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
     // Un message est valide si il a un auteur et une citation
     console.log('message ?', message);
+
+    const quotes = await fs.readFile('./data/quotes.json');
 
     // Contrôle
     const isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
@@ -41,7 +47,6 @@ v1.post('/message', async (request, response) => {
 
     //Si pas valide
     if (!isValid) return response.sendStatus(400);
-    const quotes = await fs.readFile('./data/quotes.json');
     const quoteArray = JSON.parse(quotes);
 
     /* 
