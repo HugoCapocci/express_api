@@ -1,10 +1,14 @@
 const express = require('express');
 const fs = require('fs').promises;
 const bodyParser = require('body-parser');
+require('dotenv').config();
 
 const app = express();
 const v1 = express.Router();
 const port = process.env.PORT || 3000;
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service').MessageService;
+const messageService = new MessageService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -24,7 +28,7 @@ v1.get('/message/:id', async (request, response) => {
   !message ? response.sendStatus(404) : response.send(message);
 });
 
-v1.post('/message', async (request, response) => {
+v1.post('/message', basicAuth, async (request, response) => {
   const message = request.body;
   const isValid =
     message.quote &&
@@ -35,6 +39,8 @@ v1.post('/message', async (request, response) => {
   if (!isValid) {
     return response.sendStatus(500);
   }
+
+  const createdMessage = messageService.createMessage(message);
   let quotes = await fs.readFile('./data/quotes.json');
   quotes = JSON.parse(quotes);
   const ids = quotes.map(quote => quote.id);
