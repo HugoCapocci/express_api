@@ -1,55 +1,57 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const app = express();
+const bodyParser = require('body-parser');
+
 const v1 = express.Router();
-require('dotenv').config();
 
-const basicAuth = require('./middleware/basic-auth').basicAuth;
-const MessageService = require('./services/message-service');
-const messageService = new MessageService();
-
-// toujours garder bodyParser en premier dans les appels à use()
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
-// request : requette HTTP (reçu du client)
-// response : response HTTP (à envoyer au client, en retour)
 v1.get('/message', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    response.send(JSON.parse(quotes));
-});
+    try {
+        const quotes = await fs.readFile('./data/quotes.json');
+        response.send(JSON.parse(quotes));
+    } catch (error) {
+        response.send(error);
+    }
+})
 
 v1.get('/message/:id', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
+    const quotes = await fs.readFile('./data/quotes.json')
     const quoteArray = JSON.parse(quotes);
-
-    // recupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
-    const quote = quoteArray.find(function(currentQuote) {
-       return currentQuote.id == id;
+
+    const quote = await quoteArray.find((quote) => {
+        return quote.id == id
     });
 
-    // ternaire
-    quote ? response.send(quote) : response.sendStatus(404);
-});
+    quote ?  response.send(quote) : response.sendStatus(404);
+})
 
-v1.post('/message', basicAuth, async (request, response) => {
-    const message = request.body;
+v1.post('/message', async (request, response) => {
+    const message = request.body;    
+    const isValid = message.quote && message.quote.length > 0 && message.author
 
-    // un message  est valide si il a un auteur et une citation
-    const isValid = message.quote && message.quote.length > 0
-     && message.author && message.author.length > 0;
-    
     if (!isValid) return response.sendStatus(400);
+    const quotes = await fs.readFile('./data/quotes.json');
+    const quoteArray = JSON.parse(quotes);
+    quoteArray.sort((quoteA,quoteB) => quoteB.id - quoteA.id);
 
-    // on sauvegarde dans mongo!
-    const createdMessage = messageService.createMessage(message);
+    message.id = quoteArray[0].id + 1;
+    response.send(message);
 
-    response.send(createdMessage);
-});
+
+    console.log(message);
+})
 
 app.listen(3000, () => {
-    console.log('Server listening on port 3000!');
-});
+    console.log('Server is listening on port 3000')
+})
+
+function getNextId(obj) {
+    return (Math.max.apply(Math, obj.map(function(o) {
+        return o.id;
+    })) + 1);
+}
