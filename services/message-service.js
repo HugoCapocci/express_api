@@ -22,10 +22,10 @@ module.exports = class MessageServie {
 }
 
 
-client.connect().then(() => {
-    console.log('connection ok');
+// client.connect().then(() => {
+//     console.log('connection ok');
     
-}).catch((error) => {
-    console.log('connection failed ', error);
+// }).catch((error) => {
+//     console.log('connection failed ', error);
     
-})
+// })
