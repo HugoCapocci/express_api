@@ -1,9 +1,15 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const fs = require('fs').promises;
-
 const app = express();
 const v1 = express.Router();
 
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service');
+const messageService = new MessageService();
+
+app.use(bodyParser.urlencoded({ extended :false}));
+app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
 // request : requette HTTP (reçu du client)
@@ -15,20 +21,33 @@ v1.get('/message', async (request, response) => {
 
 v1.get('/message/:id', async (request, response) => {
     const quotes = await fs.readFile('./data/quotes.json');
-    const quotesArray = JSON.parse(quotes);
+    const quoteArray = JSON.parse(quotes);
 
-    //recuperer la citation qui correspond a l'id transmis
+    // recupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
-    const quote = quoteArray.find(function(currentQuote){
-        return currentQuote.id == id;
+    const quote = quoteArray.find(function(currentQuote) {
+       return currentQuote.id == id;
     });
 
-    if(!quote){
-        response.sendStatus(404);
-    }else{
-        response.send(quote);
-    }
+    // ternaire
+    quote ? response.send(quote) : response.sendStatus(404);
+});
 
+v1.post('/message', basicAuth , async (request, response) => {
+    const message = request.body;
+    // un message est valide si il a un auteur et une citation
+    console.log('message?' ,message);
+
+    const isValid = message.quote && message.quote.length > 0
+     && message.author && message.author.length > 0;
+    //si pas valide :
+
+    if (!isValid) return response.sendStatus(400);
+
+   // on sauvegarde dans mongo!
+   const createdMessage = messageService.createMessage(message);
+
+   response.send(createdMessage);
 });
 
 app.listen(3000, () =>{
