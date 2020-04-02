@@ -45,8 +45,7 @@ v1.post('/message', basicAuth, async (request, response) => {
     if (!isValid) return response.sendStatus(400);
 
     // on sauvegarde dans mongo!
-    const createdMessage = messageService.createMessage(message);
-
+    const createdMessage = await messageService.createMessage(message);
     response.send(createdMessage);
 });
 
