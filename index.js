@@ -22,17 +22,16 @@ v1.get('/message', async (request, response) => {
 });
 
 v1.get('/message/:id', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
-
     // recupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
-    const quote = quoteArray.find(function(currentQuote) {
-       return currentQuote.id == id;
-    });
+    try {
+        const message = await messageService.getMessage(id);
 
-    // ternaire
-    quote ? response.send(quote) : response.sendStatus(404);
+        // ternaire
+        message ? response.send(message) : response.sendStatus(404);
+    } catch(e) {
+        response.sendStatus(400);
+    }
 });
 
 v1.post('/message', basicAuth, async (request, response) => {
