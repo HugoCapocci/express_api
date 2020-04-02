@@ -14,7 +14,11 @@ Pour se synchroniser avec le repository "parent"
 ------------------------------------------------
 
   * Utilisez la commande `git fetch upstream` pour récupérer la branche master "parente"
+<<<<<<< HEAD
   * En cas d'erreur "'upstream' does not appear to be a git repository" executer la commande suivante `git remote add uptream https://github.com/HugoCapocci/express_api.git` puis recommencez l'étape précédente
+=======
+  * En cas d'erreur "'upstream' does not appear to be a git repository" executer la commande suivante `git remote add upstream https://github.com/HugoCapocci/express_api.git` puis recommencez l'étape précédente
+>>>>>>> upstream/master
   * Allez sur votre branche master (qui doit être une copie de la branche master parente faite au moment du fork) via la commande `git checkout master` puis fusionnez-là avec la branche master qui vient de l'upstream, et mise à jour à la première étape : `git merge upstream/master`
 
 Routes à créer :
