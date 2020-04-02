@@ -41,33 +41,11 @@ v1.post('/message', basicAuth, async (request, response) => {
     // Contrôle
     const isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
 
-<<<<<<< HEAD
-    // Sil n'y a pas de quotes
-    if (!quotes) return response.sendStatus(500);
-
-    //Si pas valide
-    if (!isValid) return response.sendStatus(400);
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
-
-    /* 
-    équivalent de fonction (quoteA, quoteB) {
-        return quoteB - quoteA;
-    }
-    */
-    quoteArray.sort((quoteA, quoteB) => quoteB.id - quoteA.id);
-   
-    //Si valide : renvoit l'élément créé
-    message.id = quoteArray[0].id + 1;
-    response.send(message);
-})
-=======
     // on sauvegarde dans mongo!
     const createdMessage = messageService.createMessage(message);
 
     response.send(createdMessage);
 });
->>>>>>> upstream/master
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
