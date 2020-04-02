@@ -37,7 +37,7 @@ module.exports = class MessageService {
         return client.connect(); 
     }
 
-    async crclseateMessage(message) {
+    async createMessage(message) {
         //to be continued
         const client = await this.getConnectedClient();
 
@@ -45,7 +45,6 @@ module.exports = class MessageService {
         const insertedMessage = await collection.insertOne(message);
 
         await client.close();
-
         return insertedMessage;
     }
 }
