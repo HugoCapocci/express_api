@@ -1,61 +1,65 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
-
 const app = express();
 const v1 = express.Router();
+require('dotenv').config();
 
-//toujours garder bodyParser en premier dans les appels a use()
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service');
+const messageService = new MessageService();
+
+// toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
-
-//request = requete http ( reçu du client )
-//response = reponse HTTP ( à envoyer au client en retour )
-v1.get('/message', async (request, response)=>{
-    const quotes = await fs.readFile('./data/quotes.json');
-    response.send(JSON.parse(quotes));
-
+// request : requette HTTP (reçu du client)
+// response : response HTTP (à envoyer au client, en retour)
+v1.get('/message', async (request, response) => {
+    const quotes = await messageService.getMessages();
+    response.send(quotes);
 });
 
-v1.get('/message/:id', async (request, response)=>{
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
-    //recuperer la citation qui correspond à l'id transmit
+v1.get('/message/:id', async (request, response) => {
+
+    // recupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
-    const quote = quoteArray.find(function(currentQuote){
-        return currentQuote.id == id;
-    });
-    quote ? response.send(quote) : response.sendStatus(404) ;
-
+    try{
+        const message = await messageService.getMessage(id); 
+        message ? response.send(message) : response.sendStatus(404);
+    }
+    catch(e){
+        response.sendStatus(400);
+    }
 });
 
-v1.post('/message', async (request, response)=>{
-    const message =  request.body;
-    //une citation est valide si elle a un auteur et une citation
-    console.log('message', message);
-    const isValid = message.quote && message.author && message.quote.length > 0 && message.author.length > 0;
-    //si pas valide
+v1.post('/message', basicAuth, async (request, response) => {
+    const message = request.body;
+
+    // un message  est valide si il a un auteur et une citation
+    const isValid = message.quote && message.quote.length > 0
+     && message.author && message.author.length > 0;
+    
     if (!isValid) return response.sendStatus(400);
 
-    const quotes = await fs.readFile('./data/quotes.json');
-    if (!quotes) return response.sendStatus(500);
+    // on sauvegarde dans mongo!
+    const createdMessage = messageService.createMessage(message);
 
-    const quoteArray = JSON.parse(quotes);
-    quoteArray.sort((quoteA,quoteB)=>quoteB.id-quoteA.id);
-    /*équivalent de : function(quoteA,quoteB){
-        return quoteB-quoteA;
-    }
-    */
-
-    //si valide: renvoit l'element crée
-    //ajouter max id+1
-    message.id=quoteArray[0].id+1 ;
-    response.send(message);
-
+    response.send(createdMessage);
 });
 
-app.listen(3000,()=>{
-    console.log('Server listening in port 3000!');
+v1.delete('/message/:id',basicAuth,  async (request, response) => {
+
+    const id = request.params.id;
+    try{
+        const isDelete = await messageService.deleteMessage(id); 
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    }
+    catch(e){
+        response.sendStatus(400);
+    }
+});
+app.listen(3000, () => {
+    console.log('Server listening on port 3000!');
 });
