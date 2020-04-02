@@ -43,6 +43,17 @@ class MessageService {
 
         return quote;
     };
+
+    async deleteMessage(id) {
+        const client = await this.getConnectedService();
+
+        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        const result = await collection.deleteOne({ _id: mongodb.ObjectID(id) });
+
+        await client.close();
+
+        return result.deletedCount === 1;
+    };
 }
 
 export default MessageService;
