@@ -13,20 +13,20 @@ app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
 //GET ALL
-v1.get('/message', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    response.send(JSON.parse(quotes));
+v1.get('/messages', async (request, response) => {
+    const quotes = await messageService.getMessages();
+    response.send(quotes);
 });
 
 //GET BY ID
-v1.get('/message/:id', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
+v1.get('/messages/:id', async (request, response) => {
     const id = request.params.id;
-    const quote = quoteArray.find(currentQuote => {
-        return id == currentQuote.id;
-    });
-    quote ? response.send(quote) : response.sendStatus(404);
+    try {
+        const message = await messageService.getMessage(id);
+        message ? response.send(message) : response.sendStatus(404);
+    }catch (e) {
+        response.sendStatus(400);
+    }
 });
 
 //POST
@@ -40,6 +40,15 @@ v1.post('/message', basicAuth, async (request, response) => {
     response.send(createdMessage);
 
 });
+
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    try {
+        const isDeleted = await messageService.deleteMessage(request.params.id);
+        isDeleted ? response.sendStatus(200) : response.sendStatus(404);
+    }catch (e) {
+        response.sendStatus(400);
+    }
+    });
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000!')

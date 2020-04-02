@@ -1,7 +1,6 @@
 module.exports.basicAuth = function(request, response, next) {
 
     const authorization = request.headers.authorization;
-    console.log('authorization', authorization);
     const encoded = authorization.replace('Basic ', '');
     const decoded = Buffer.from(encoded, 'base64').toString('utf8');
 
