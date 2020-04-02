@@ -26,4 +26,12 @@ module.exports = class MessageService {
         await client.close();
         return insertedMessage;
     }
+
+    async getMessages() {
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const quotes = await collection.find({}).toArray();
+        await client.close();
+        return quotes;
+    }
 }

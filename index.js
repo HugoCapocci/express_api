@@ -17,8 +17,8 @@ app.use('/api/v1', v1);
 // request : requette HTTP (reçu du client)
 // response : response HTTP (à envoyer au client, en retour)
 v1.get('/message', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    response.send(JSON.parse(quotes));
+    const quotes = await messageService.getMessages();
+    response.send(quotes);
 });
 
 v1.get('/message/:id', async (request, response) => {
