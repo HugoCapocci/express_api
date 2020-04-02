@@ -15,18 +15,25 @@ app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
 v1.get('/message', async (request, response) => {
-    let quotes = await fs.readFile('./data/quotes.json');
-    response.send(JSON.parse(quotes));
+    // let quotes = await fs.readFile('./data/quotes.json');
+
+    let quotes = await messageService.getMessages();
+    response.send(quotes);
 });
 
 v1.get('/message/:id', async (request, response) => {
     let id = request.params.id;
-    let quotes = await fs.readFile('./data/quotes.json');
-    let quote = JSON.parse(quotes).find(quote => quote.id == id);
-
-    quote ? response.send(quote) : response.sendStatus(404);
-
+    // let quotes = await fs.readFile('./data/quotes.json');
+    // let quote = JSON.parse(quotes).find(quote => quote.id == id);
+    
+    try{
+        let quote = await messageService.getMessage(id);
+        response.send(quote)
+    }catch(error){
+        response.sendStatus(400);
+    }
 });
+
 
 v1.post('/message', basicAuth, async (request, response) => {
     let message = request.body;
@@ -35,7 +42,9 @@ v1.post('/message', basicAuth, async (request, response) => {
     
     if(!isValid) return response.sendStatus(400);
 
-    let createdMessage = messageService.createdMessage(message);
+    console.log('here');
+
+    let createdMessage = await messageService.createMessage(message);
 
     // let quotes = await fs.readFile('./data/quotes.json');
     // if(!quotes) return response.sendStatus(500);
@@ -44,9 +53,21 @@ v1.post('/message', basicAuth, async (request, response) => {
     // quoteArray.sort((a, b) => b.id - a.id);
 
     // message.id = quoteArray[0].id +1;
-    response.send(message);
+    response.send(createdMessage);
 
 
+});
+
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    let id = request.params.id;
+    try{
+        let isDeleted = await messageService.deleteMessage(id);
+        isDeleted ? response.sendStatus(200) : response.sendStatus(404);
+    }catch(error){
+        response.sendStatus(400);
+    }
+    
+    
 });
 
 

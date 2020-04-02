@@ -13,11 +13,50 @@ module.exports = class MessageServie {
         return client.connect();
     }
 
-    createMessage(message){
+    async createMessage(message){
+        
+        const client = await this.getConnectedClient();
 
-        const client = this.getConnectedClient();
+        let collection = client.db(process.env.MONGO_DB).collection('messages');
+        let insertedMessage = await collection.insertOne(message);
+        await client.close();
 
-        client.close();
+        return insertedMessage;
+    }
+
+    async getMessages(){
+        
+        const client = await this.getConnectedClient();
+
+        let collection = client.db(process.env.MONGO_DB).collection('messages');
+        let quotes = await collection.find({}).toArray();
+        await client.close();
+
+        return quotes;
+    }
+
+
+    async getMessage(id){
+        const client = await this.getConnectedClient();
+
+        let collection = client.db(process.env.MONGO_DB).collection('messages');
+        let quote = await collection.findOne({_id : ObjectID(id)});
+        await client.close();
+
+        return quote;
+    }
+
+    async deleteMessage(id){
+        
+        
+        const client = await this.getConnectedClient();
+
+        let collection = client.db(process.env.MONGO_DB).collection('messages');
+        let res = await collection.deleteOne({_id : ObjectID(id)});
+
+        await client.close();
+
+        return res.deletedCount === 1;
     }
 }
 

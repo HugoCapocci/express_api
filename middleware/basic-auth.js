@@ -9,7 +9,7 @@ module.exports.basicAuth = (request, response, next) => {
 
     let auth = decoded.split(':');
     let isValid = auth[0] === 'test' && auth[1] === '123456';
-    
+
     isValid ? next() : response.sendStatus(401);
     
 }
