@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs').promises;
+//const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 require('dotenv').config();
@@ -84,6 +84,22 @@ v1.post('/message', basicAuth, async (req, res) => {
     // // ajouter max id + 1
     // message.id = quoteArray[0].id + 1;
     //res.send(message);
+});
+
+v1.delete('/message/:id', basicAuth, async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await messageService.deleteMessageById(id);
+        if (!result)
+            res.sendStatus(404);
+        else {
+            res.sendStatus(200);
+        }
+    } catch(e) {
+        res.sendStatus(400);
+    } 
+
 });
 
 app.listen(3000, () => {

@@ -46,4 +46,13 @@ module.exports = class MessageService {
         return quotes;
     }
 
+    async deleteMessageById(id) {
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const result = await collection.deleteOne({_id : ObjectID(id)});
+
+        await client.close();
+        return result.deletedCount === 1;
+    }
+
 };
