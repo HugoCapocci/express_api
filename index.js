@@ -16,16 +16,34 @@ app.use('/api/v1', v1);
 // req = requete HTTP (reçu du client)
 // res = response HTTP (à envoyer au client en retour)
 v1.get('/message', async (req, res) => {
-        const quotes = await fs.readFile('./data/quotes.json');
-        //res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.parse(quotes));
+    const quotes = await messageService.getMessages();
+    res.send(quotes);
+    // Get avec un fichier JSON
+    //const quotes = await fs.readFile('./data/quotes.json');
+    //res.setHeader('Content-Type', 'application/json');
+    //res.send(JSON.parse(quotes));
 });
 
 v1.get('/message/:id', async (req, res) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
-    // récupérer le message qui correspond à l'id
+
     const id = req.params.id;
+
+    try {
+        const quotes = await messageService.getMessagesById(id);
+        if (!quotes)
+            res.sendStatus(404);
+        else
+            res.send(quotes);
+
+    } catch(e) {
+        res.sendStatus(400);
+    }
+   
+    // Get ID avec un fichier JSON
+    /*const quotes = await fs.readFile('./data/quotes.json');
+    const quoteArray = JSON.parse(quotes);*/
+    // récupérer le message qui correspond à l'id
+    /*const id = req.params.id;
     const quote = quoteArray.find(function(currentQuote) {
         return currentQuote.id == id;
     });
@@ -34,7 +52,7 @@ v1.get('/message/:id', async (req, res) => {
         res.sendStatus(404);
     } else {
         res.send(quote);
-    }
+    }*/
 
 });
 
