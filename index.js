@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
-const messageService = new MessageService;
+const messageService = new MessageService();
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
