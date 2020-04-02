@@ -26,7 +26,6 @@ v1.get('/message/:id', async (request, response) => {
     const id = request.params.id;
     try {
         const message = await messageService.getMessage(id);
-
         // ternaire
         message ? response.send(message) : response.sendStatus(404);
     } catch(e) {
@@ -46,6 +45,16 @@ v1.post('/message', basicAuth, async (request, response) => {
     // on sauvegarde dans mongo!
     const createdMessage = await messageService.createMessage(message);
     response.send(createdMessage);
+});
+
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    try {
+        const isDeleted = await messageService.deleteMessage(id);
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    } catch(e) {
+        response.sendStatus(400);
+    }
 });
 
 app.listen(3000, () => {
