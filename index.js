@@ -3,19 +3,8 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
-<<<<<<< HEAD
-require('dotenv').config()
 
 const basicAuth = require('./middleware/basic-auth').basicAuth;
-const MessageService = require('./services/message-service');
-const messageService = new MessageService;
-=======
-require('dotenv').config();
-
-const basicAuth = require('./middleware/basic-auth').basicAuth;
-const MessageService = require('./services/message-service');
-const messageService = new MessageService();
->>>>>>> upstream/master
 
 // toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -36,7 +25,7 @@ v1.get('/message/:id', async (request, response) => {
     // recupérer la citation qui correspond à l'id transmis
     const id = request.params.id;
     const quote = quoteArray.find(function(currentQuote) {
-        return currentQuote.id == id;
+       return currentQuote.id == id;
     });
 
     // ternaire
@@ -48,14 +37,21 @@ v1.post('/message', basicAuth, async (request, response) => {
 
     // un message  est valide si il a un auteur et une citation
     const isValid = message.quote && message.quote.length > 0
-        && message.author && message.author.length > 0;
-
+     && message.author && message.author.length > 0;
+    
     if (!isValid) return response.sendStatus(400);
 
-    // on sauvegarde dans mongo!
-    const createdMessage = messageService.createMessage(message);
+    const quotes = await fs.readFile('./data/quotes.json');
+    if (!quotes) return response.sendStatus(500);
 
-    response.send(createdMessage);
+    const quoteArray = JSON.parse(quotes);
+    quoteArray.sort((quoteA, quoteB) => quoteB.id - quoteA.id);
+    /* équivalent de: function(quoteA, quoteB) {
+        return quoteB - quoteA;
+    }
+    */
+    message.id = quoteArray[0].id + 1;
+    response.send(message);
 });
 
 app.listen(3000, () => {

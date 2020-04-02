@@ -10,11 +10,7 @@ module.exports.basicAuth = function(request, response, next) {
     // si user = user & password=password, ok
     const isValid = authentication[0] === 'user'
         && authentication[1] === 'password';
-<<<<<<< HEAD
-
-=======
     
->>>>>>> upstream/master
     // si pas authentifié
     isValid ? next() : response.sendStatus(401);
 };
