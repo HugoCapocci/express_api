@@ -13,7 +13,8 @@ module.exports = class MessageService {
         return client.connect();
     }
 
-    static async createMessage(message) {
+    //Crée le message passé en paramètres dans la base de données
+    static async create(message) {
         const client = await this.getConnectedClient();
 
         const collection = client.db(process.env.MONGO_DB).collection('messages');
@@ -22,6 +23,44 @@ module.exports = class MessageService {
         await client.close();
 
         return insertedMessage;
+    }
+
+    //Retourne la liste de tous les messages
+    static async list(){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+
+        const quotes = await collection.find({}).toArray();
+        await client.close()
+
+        return quotes;
+    }
+
+    //Retourne le message ayant l'id spécifié
+    static async details(id){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+
+        const quotes = await collection.findOne({
+            _id: new ObjectID(id)
+        });
+
+        await client.close();
+
+        return quotes;
+    }
+
+    //Supprime le message ayant l'id spécifié
+    static async delete(id){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+
+        const result = await collection.deleteOne({
+            _id: new ObjectID(id)
+        });
+
+        await client.close();
+        return result;
     }
 
 }
