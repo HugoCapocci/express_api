@@ -50,7 +50,7 @@ v1.post('/message', basicAuth, async (req, res) => {
     if (!isValid)
         return res.sendStatus(400);
 
-    const createMessage = messageService.createMessage(message);
+    const createMessage = await messageService.createMessage(message);
 
     res.send(createMessage);
     // const quotes = await fs.readFile('./data/quotes.json');
