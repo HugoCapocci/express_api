@@ -33,6 +33,10 @@ module.exports = class MessageService  {
 
         // smth
 
-        client.close();
+        await client.close();
+
+        return {
+            
+        }
     }
 }
