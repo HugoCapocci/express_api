@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 module.exports = class MessageService {
   getConnectedClient() {
@@ -21,5 +21,31 @@ module.exports = class MessageService {
     await client.close();
 
     return insertedMessage;
+  }
+
+  async getMessages() {
+    const client = await this.getConnectedClient();
+    const collection = client
+      .db(process.env.DATABASE_NAME)
+      .collection("messages");
+
+    const quotes = await collection.find({}).toArray();
+
+    await client.close();
+
+    return quotes;
+  }
+
+  async getMessage(id) {
+    const client = await this.getConnectedClient();
+    const collection = client
+      .db(process.env.DATABASE_NAME)
+      .collection("messages");
+
+    const quote = await collection.findOne({ _id: ObjectId(id) });
+
+    await client.close();
+
+    return quote;
   }
 };

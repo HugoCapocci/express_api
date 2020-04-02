@@ -16,20 +16,23 @@ app.use("/api/v1", v1);
 const messageService = new MessageService();
 
 v1.get("/message", async (request, response) => {
-  const quotes = await fs.readFile("./data/quotes.json");
-  response.send(JSON.parse(quotes));
+  const quotes = await messageService.getMessages();
+
+  response.send(quotes);
 });
 
 v1.get("/message/:id", async (request, response) => {
-  const id = request.params.id;
-  const quotes = await fs.readFile("./data/quotes.json");
-  const quotesArray = JSON.parse(quotes);
-  const quote = quotesArray.find(q => q.id == id);
+  try {
+    const id = request.params.id;
+    const quote = await messageService.getMessage(id);
 
-  if (!quote) {
-    response.sendStatus(404);
-  } else {
-    response.send(quote);
+    if (!quote) {
+      response.sendStatus(404);
+    } else {
+      response.send(quote);
+    }
+  } catch (error) {
+    response.sendStatus(400);
   }
 });
 
