@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 module.exports.basicAuth = function(request, response, next){
 
     const authorization = request.headers.authorization; // 'Basic xxxx'
