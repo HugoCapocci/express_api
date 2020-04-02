@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+require('dotenv').config();
+const MessageService = require('./services/message-service');
 
 const fs = require('fs').promises;
 const app = express();
@@ -42,21 +44,16 @@ v1.post('/message', basicAuth, async (request, response) =>{
      && message.author && message.author.length > 0;
     //
 
-    if(isValid){
-        const quotes = await fs.readFile('./data/quotes.json')
-        const quoteArray = JSON.parse(quotes);
-
-        quoteArray.sort((quoteA,quoteB) => quoteB.id - quoteA.id);
-
-        message.id = quoteArray[0].id + 1;
-
-        response.send(message);
-    }else{
-        
+    if(!isValid){
         response.sendStatus(400);
     }
+        
+    const createdMessage = await MessageService.createMessage(message);
+    response.send(createdMessage);
+    
+
 })
 
 app.listen(3000, ()=>{
-    console.log('server listenig on port 3000 - Ta mère est un velow');
+    console.log('server listenig on port 3000');
 })
