@@ -3,6 +3,11 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
+require('dotenv').config();
+
+const basicAuth = require('./middleware/basic-auth').basicAuth;
+const MessageService = require('./services/message-service');
+const messageService = new MessageService();
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -28,7 +33,7 @@ v1.get('/message/:id', async (request, response) => {
     quote ? response.send(quote) : response.sendStatus(404);
 })
 
-v1.post('/message', async (request, response) => {
+v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
     // Un message est valide si il a un auteur et une citation
     console.log('message ?', message);
@@ -36,6 +41,7 @@ v1.post('/message', async (request, response) => {
     // Contrôle
     const isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
 
+<<<<<<< HEAD
     // Sil n'y a pas de quotes
     if (!quotes) return response.sendStatus(500);
 
@@ -55,6 +61,13 @@ v1.post('/message', async (request, response) => {
     message.id = quoteArray[0].id + 1;
     response.send(message);
 })
+=======
+    // on sauvegarde dans mongo!
+    const createdMessage = messageService.createMessage(message);
+
+    response.send(createdMessage);
+});
+>>>>>>> upstream/master
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
