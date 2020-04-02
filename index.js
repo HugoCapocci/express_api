@@ -16,21 +16,21 @@ app.use('/api/v1', v1);
 
 v1.get('/message', async (request, response) => {
 
-    const quotes = await fs.readFile('./express_api/data/quotes.json');
-
+    const quotes = await messageService.getMessages();
     response.setHeader('content-type', 'application/json');
-    response.send(JSON.parse(quotes));
+    response.send(quotes);
 })
 
 v1.get('/message/:id', async (request, response) => {
-    const quotes = await fs.readFile('./express_api/data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
-    const id = request.params.id;
-    const quote = quoteArray.find(function(currentQuote){
-        return currentQuote.id == id;
-    })
 
-    quote ? response.send(quote) : response.sendStatus(404);
+    const id = request.params.id;
+    try {
+        const message  = await messageService.getMessage(id);
+
+        message ? response.send(message) : response.sendStatus(404);
+    } catch(e) {
+        response.sendStatus(400);
+    }
 })
 
 v1.post('/message', basicAuth, async (request, response) => {
@@ -44,10 +44,22 @@ v1.post('/message', basicAuth, async (request, response) => {
 
     response.send(createdMessage);
     response.send(message);
-})
+});
+
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    try {
+        const isDeleted = await messageService.deleteMessage(id);
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    } catch (e){
+        response.sendStatus(400);
+    }
+});
 
 app.listen(3000, () => {
     console.log("Listening on port 3000");
 })
+
+
 
 
