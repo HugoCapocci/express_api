@@ -5,8 +5,8 @@ const app = express();
 const v1 = express.Router();
 require('dotenv').config();
 
-const basicAuth = require('./middleware/basic-auth').basicAuth;
-const MessageService = require('./services/message-service');
+const basicAuth = require("./middleware/basic-auth").basicAuth;
+const MessageService = require("./services/message-service");
 const messageService = new MessageService();
 
 // toujours garder bodyParser en premier dans les appels à use()
@@ -43,9 +43,11 @@ v1.post('/message', basicAuth, async (request, response) => {
      && message.author && message.author.length > 0;
     
     if (!isValid) return response.sendStatus(400);
+    console.log(process.env.MONGO_CONNECTION_URL);
 
     // on sauvegarde dans mongo!
-    const createdMessage = messageService.createMessage(message);
+    const createdMessage = await messageService.createMessage(message);
+
 
     response.send(createdMessage);
 });

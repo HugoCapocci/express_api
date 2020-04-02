@@ -18,8 +18,12 @@ module.exports = class MessageService {
         return client.connect();
     }
 
-    createMessage(message) {
-        // TODO !
+    async createMessage(message){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const insertedMessage = await collection.insertOne(message);
+        await client.close();
+        return insertedMessage;
     }
 
 }
