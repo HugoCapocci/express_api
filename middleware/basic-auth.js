@@ -8,7 +8,7 @@ module.exports.basicAuth = function (request, response, next) {
     const authentication = decoded.split(':');
 
     // si user = user & pass = pass , ok
-    const isValid = authentication[0]=== 'user' && authentication[1] === 'password';
+    const isValid = authentication[0] === 'user' && authentication[1] === 'password';
 
     // si pas authentifié
     isValid ? next() : response.sendStatus(401);

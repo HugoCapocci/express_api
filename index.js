@@ -5,6 +5,8 @@ const app = express();
 const v1 = express.Router();
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 require('dotenv').config();
+const MessageService = require('./services/message-service');
+const messageService = new MessageService();
 
 // toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -34,7 +36,7 @@ v1.get('/message/:id', async (request, response) => {
 
 });
 
-console.log('basicAuth ', basicAuth);
+// console.log('basicAuth ', basicAuth);
 v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
     // un message est valide si il a un auther et une citation
@@ -43,7 +45,10 @@ v1.post('/message', basicAuth, async (request, response) => {
     const isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
     // si pas valide
     if(!isValid) return response.sendStatus(400);
-    response.send(message);
+
+    // on sauvegarde dans mongo
+    const createdMessage = await messageService.createMessage(message);
+    response.send(createdMessage);
 });
 
 app.listen(3000, () => {
