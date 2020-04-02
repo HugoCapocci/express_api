@@ -1,7 +1,7 @@
 // const {a} = require('libA') <=> const a = require('libA').a
 const { MongoClient, ObjectId } = require('mongodb');
 
-console.log('process.env.MONGO_CONNECTION_URL? ', process.env.MONGO_CONNECTION_URL);
+// console.log('process.env.MONGO_CONNECTION_URL: ', process.env.MONGO_CONNECTION_URL);
 
 module.exports = class MessageService{
 
@@ -25,7 +25,33 @@ module.exports = class MessageService{
         await client.close();
 
         return insertedMessage;
+    }
+    async getMessages(){
+        // TODO
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const quotes = await collection.find({}).toArray();
 
+        //
+        await client.close();
+
+        return quotes;
+    }
+    async getOneMessage(id){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const message = await collection.findOne({_id: ObjectId(id)});
+
+        await client.close();
+
+        return message;
+    }
+    async deleteMessage(id){
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const result = await collection.deleteOne({_id: ObjectId(id)});
+        await client.close();
+        return result.deletedCount === 1;
     }
 }
 

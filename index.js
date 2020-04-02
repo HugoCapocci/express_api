@@ -16,24 +16,22 @@ app.use('/api/v1', v1);
 // request : requette HTTP (reçu du client)
 // response : réponse HTTP à envoyer, au clienten retour
 v1.get('/message',async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
+    // const quotes = await fs.readFile('./data/quotes.json');
+    const quotes = await messageService.getMessages();
     // response.setHeader('content-type', 'application/json');
-    response.send(JSON.parse(quotes));
+    response.send(quotes);
 });
 
 v1.get('/message/:id', async (request, response) => {
-    const quotes = await fs.readFile('./data/quotes.json');
-    const quoteArray = JSON.parse(quotes);
+    // const quotes = await fs.readFile('./data/quotes.json');
     const id = request.params.id;
-    // response.send(quotes);
-
-    const quote = quoteArray.find(function (currentOne) {
-        return currentOne.id == id;
-    });
-
-    // ternaire
-    quote ? response.send(quote) : response.sendStatus(404);
-
+    try {
+        const message = await messageService.getOneMessage(id);
+        message ? response.send(message) : response.sendStatus(404);
+    }
+    catch (e) {
+        response.sendStatus(400);
+    }
 });
 
 // console.log('basicAuth ', basicAuth);
@@ -49,6 +47,16 @@ v1.post('/message', basicAuth, async (request, response) => {
     // on sauvegarde dans mongo
     const createdMessage = await messageService.createMessage(message);
     response.send(createdMessage);
+});
+
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    try {
+        const isDeleted = await  messageService.deleteMessage(id);
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    }catch (e) {
+        response.sendStatus(400);
+    }
 });
 
 app.listen(3000, () => {
