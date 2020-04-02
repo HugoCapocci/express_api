@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 
-require('dotenv').config()
+require('dotenv').config();
 
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
