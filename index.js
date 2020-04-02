@@ -57,6 +57,17 @@ v1.post('/message', basicAuth, async (request, response) => {
     response.send(createdMessage);
 })
 
+v1.delete('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    try {
+        const isDeleted = await messageService.deleteMeessage(id);
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    } catch (error) {
+        response.sendStatus(400);
+    }
+   
+})
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
 })
