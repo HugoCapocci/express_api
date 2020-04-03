@@ -9,6 +9,8 @@ require('dotenv').config();
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/file-service');
+const fileService = new FileService();
 
 
 //toujours garder bodyParser en premier dans les appels a use()
@@ -93,9 +95,16 @@ const multer = require('multer');
 //on specifie un dossier, sur le serveur, ou recevoir les fichier envoyes par POST
 const upload = multer({ dest: 'data/upload/' });
 
-v1.post('/file', upload.single('myFile'),(request, response) => {
-    console.log(request.file);
-    response.sendStatus(200);
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    //console.log(request.file);
+    //response.sendStatus(200);
+    try{
+        await fileService.saveFileInfos(request.file);
+        response.sendStatus(200);
+    } catch(error) {
+        response.sendStatus(500);
+    }
+
 });
 
 app.listen(3000, () => {
