@@ -61,6 +61,18 @@ v1.delete('/message/:id', basicAuth, async (req, res) => {
     }
 });
 
+v1.put('/message/:id', basicAuth, async (req, res) => {
+});
+
+const multer = require('multer');
+//on spécifie un dossier ou recevoir les fichiers 
+const upload = multer({dest: 'data/upload/'});
+
+v1.post('/file',upload.single('myFile'), (req, res) => {
+    console.log(req.file);
+    res.sendStatus(200);
+});
+
 app.listen(3000, ()=>{
     console.log('server listenig on port 3000');
 })
