@@ -7,6 +7,8 @@ const basicAuth = require('./middleware/basic-auth').basicAuth;
 require('dotenv').config();
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/FileService');
+const fileService = new FileService();
 
 // toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -82,8 +84,47 @@ const multer = require('multer');
 // on spécifie un dossier sur le serveur ou on va recevoir les fichiers par POST
 const upload = multer({dest: 'data/upload'});
 v1.post('/file',upload.single('myFile') , (request, response) => {
-    console.log(request.file);
-    response.sendStatus(200);
+    try {
+        fileService.saveFileInfo(request.file);
+        // console.log(request.file);
+        response.sendStatus(200);
+    }catch (e) {
+        response.sendStatus(500);
+    }
+
+});
+
+v1.get('/file', async (request, response) => {
+    try {
+        const filesInfo = await fileService.getFilesInfo();
+        response.send(filesInfo);
+    }catch (e) {
+        console.log('erreurs : ', e);
+        response.sendStatus(500);
+    }
+});
+
+
+v1.get('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const fileResult = await fileService.getFile(id);
+        // response.send(200);
+        if (fileResult){
+            response.setHeader('Content-disposition', 'attachement; filename=' + fileResult.fileInfo['original-name']);
+            response.setHeader('Content-type', fileResult.fileInfo['mime-type']);
+            response.setHeader('Content-length', fileResult.fileInfo.size);
+            // on envoie el flux du fichier
+            fileResult.file.pipe(response);
+            response.sendStatus(200);
+        }
+        else{
+            response.sendStatus(404);
+        }
+    }catch (e) {
+        console.log('erreurs : ', e);
+        response.sendStatus(500);
+    }
 });
 
 app.listen(3000, () => {
