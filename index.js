@@ -6,11 +6,13 @@ const v1 = express.Router();
 
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/file-service');
+const fileService = new FileService();
 
 const { basicAuth } = require('./middleware/basic-auth');
 
 
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
 
@@ -25,11 +27,11 @@ v1.get('/message/:id', async (request, response) => {
     let id = request.params.id;
     // let quotes = await fs.readFile('./data/quotes.json');
     // let quote = JSON.parse(quotes).find(quote => quote.id == id);
-    
-    try{
+
+    try {
         let quote = await messageService.getMessage(id);
         response.send(quote)
-    }catch(error){
+    } catch (error) {
         response.sendStatus(400);
     }
 });
@@ -38,9 +40,8 @@ v1.get('/message/:id', async (request, response) => {
 v1.post('/message', basicAuth, async (request, response) => {
     let message = request.body;
 
-    let isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
-    
-    if(!isValid) return response.sendStatus(400);
+
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
 
     console.log('here');
 
@@ -48,7 +49,7 @@ v1.post('/message', basicAuth, async (request, response) => {
 
     // let quotes = await fs.readFile('./data/quotes.json');
     // if(!quotes) return response.sendStatus(500);
-    
+
     // let quoteArray = JSON.parse(quotes);
     // quoteArray.sort((a, b) => b.id - a.id);
 
@@ -60,14 +61,77 @@ v1.post('/message', basicAuth, async (request, response) => {
 
 v1.delete('/message/:id', basicAuth, async (request, response) => {
     let id = request.params.id;
-    try{
+    try {
         let isDeleted = await messageService.deleteMessage(id);
         isDeleted ? response.sendStatus(200) : response.sendStatus(404);
-    }catch(error){
+    } catch (error) {
         response.sendStatus(400);
     }
-    
-    
+
+
+});
+
+v1.put('/message/:id', basicAuth, async (request, response) => {
+    let id = request.params.id;
+    let message = request.body;
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    try {
+        let res = await messageService.updateMessage(message, id);
+
+        if (res.isFind) return response.sendStatus(404);
+        res.isModified ? response.sendStatus(200) : response.sendStatus(404);
+    } catch (error) {
+        response.sendStatus(400);
+    }
+
+
+});
+
+const multer = require('multer');
+const upload = multer({ dest: 'data/upload/' });
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    try {
+        await fileService.saveFileInfos(request.file);
+        response.sendStatus(200);
+    } catch (error) {
+        response.sendStatus(500);
+    }
+
+});
+
+v1.get('/file', async (request, response) => {
+    try {
+        let filesInfo = await fileService.getFilesInfo();
+        response.send(filesInfo);
+    } catch (error) {
+        response.sendStatus(500);
+    }
+});
+
+v1.get('/file/:id', async (request, response) => {
+    let id = request.params.id;
+    try {
+        let fileResult = await fileService.getFile(id);
+        if (fileResult) {
+            response.setHeader(
+                'Content-disposition',
+                'attachment; filename=' + fileResult.fileInfo['original-name']
+            );
+            response.setHeader(
+                'Content-length',
+                fileResult.fileInfo.size
+            );
+            response.setHeader(
+                'Content-type', fileResult.fileInfo['mime-type']
+            );
+            fileResult.file.pipe(response);
+            response.sendStatus(200);
+        } else {
+            response.sendStatus(404)
+        }
+    } catch (error) {
+        response.sendStatus(500);
+    }
 });
 
 
