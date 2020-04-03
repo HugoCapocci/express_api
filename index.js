@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 require('dotenv').config();
@@ -38,19 +37,9 @@ v1.get('/message/:id', async (request, response) => {
 
 v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
-    // Un message est valide si il a un auteur et une citation
-    console.log('message ?', message);
-
-    const quotes = await fs.readFile('./data/quotes.json');
-
-    // Contrôle
-    const isValid = message.quote && message.quote.length > 0 && message.author && message.author.length > 0;
-
-    // Sil n'y a pas de quotes
-    if (!quotes) return response.sendStatus(500);
 
     //Si pas valide
-    if (!isValid) return response.sendStatus(400);
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
     
     // On sauvegarde dans Mongo !
     const createdMessage = await messageService.createMessage(message)
@@ -66,6 +55,20 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
         response.sendStatus(400);
     }
    
+})
+
+v1.put('/message/:id', basicAuth, async (request, response) => {
+    const message = request.body;
+    const id = request.params.id;
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    try {
+        const result = await messageService.updateMessage(message, id);
+        if(!result.isFind) return response.sendStatus(404);
+        result.isModified ? response.sendStatus(200) : response.sendStatus(304);
+    } catch (error) {
+        console.log('Erreur : ' , error);
+        response.sendStatus(400);
+    }
 })
 
 app.listen(3000, () => {
