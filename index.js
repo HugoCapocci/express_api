@@ -10,7 +10,63 @@ const messageService = new MessageService();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
+const multer = require('multer');
+const upload = multer({dest: 'data/upload/'});
+const FileService = require('./services/file-service');
+const fileService = new FileService();
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    //meta donnees recuperes
+    try {
+        await fileService.saveFileInfos(request.file);
+        /*
+        on veut extraire et enregistrer filename (nom sur le disque)
+        originalname -> "vrai nom du fichier"
+        mimetype, size, encoding
+         */
+        response.sendStatus(200);
+    } catch (e) {
+        response.sendStatus(500);
+    }
+});
 
+v1.get('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const fileResult = await fileService.getFile(id);
+        if (fileResult) {
+            response.setHeader('Content-disposition',
+                'attachment; filename =' +
+                '', fileResult.fileInfo['original-name']);
+
+            response.setHeader('Content-type', fileResult.fileInfo['mime-type']);
+            response.setHeader('Content-length', fileResult.fileInfo.size);
+            fileResult.file.pipe(response);
+
+            // response.send(200);
+        } else {
+            response.send(404);
+        }
+    } catch (e) {
+        //  console.log(e.message());
+        response.sendStatus(500);
+    }
+    //const quotes = await fs.readFile('./data/quotes.json');
+    //response.setHeader('content-type', 'application/json');
+});
+v1.delete('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const deletedFile = await fileService.deleteFile(id);
+        if (deletedFile === null) return response.sendStatus(404);
+        deletedFile ? response.sendStatus(200) : response.sendStatus(403);
+        //response.sendStatus(200);
+    } catch (e) {
+        console.log(e);
+        response.sendStatus(500);
+    }
+    //const quotes = await fs.readFile('./data/quotes.json');
+    //response.setHeader('content-type', 'application/json');
+});
 //request requete htpp reçu du client
 //response reponse http à envoyer au client en retour
 v1.get('/message', async (request, response) => {
@@ -47,16 +103,26 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
 
 });
 
+v1.put('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    const message = request.body;
+    if (!MessageService.isMessageValid(message))
+        return response.sendStatus(400);
+    try {
+        const result = await messageService.updateMessage(message, id);
+        if (!result.isFind) response.sendStatus(404);
+        result.isModified ? response.sendStatus(200) : response.sendStatus(304);
+    } catch (e) {
+        response.sendStatus(400);
+    }
 
+});
 v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
     //un message est valide s'il a un auteur et une citation
     console.log('message', message);
 
-    const isValid = message.quote && message.quote.length > 0
-        && message.author && message.author.length > 0;
-
-    if (!isValid) return response.sendStatus(400);
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
     // const quotes = await fs.readFile('./data/quotes.json');
     // const quotesArray = JSON.parse(quotes);
 
