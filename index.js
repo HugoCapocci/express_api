@@ -76,8 +76,12 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
 });
 
 v1.post('/file', upload.single('myFile'), async (request, response) => {
-    await fileService.saveFileInfos(request.file);
-    response.sendStatus(200);
+    try {
+        await fileService.saveFileInfos(request.file);
+        response.sendStatus(200);
+    } catch(e) {
+        response.sendStatus(500);
+    }
 });
 
 app.listen(3000, () => {
