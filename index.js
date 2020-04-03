@@ -79,15 +79,22 @@ v1.put('/message/:id', basicAuth, async (req, res) => {
     res.send(updatedMessage);
 });
 
-//Multer for manipulating files
+//Multer for manipulating posted files
 const multer = require('multer');
 //on spécifie un dossier ou recevoir les fichiers 
 const upload = multer({dest: 'data/upload/'});
 
 //Create the file reference in database
 v1.post('/file',upload.single('myFile'), async (req, res) => {
-    await fileService.saveFileInfo(req.file);
-    res.sendStatus(200);
+    console.log('Entering Savinf function');
+    try {
+        await fileService.saveFileInfo(req.file);   
+        res.sendStatus(200); 
+    } catch (error) {
+        console.log('entering catch');
+        res.sendStatus(500);
+    }
+    
 });
 
 app.listen(3000, ()=>{
