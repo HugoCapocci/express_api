@@ -85,11 +85,21 @@ module.exports = class FileService {
         try {
 
             // On récupère les metadata (à minima 'file-name')
+            const queryResult = await client.query(
+                'SELECT * FROM filestore WHERE id = $1',
+                [id]
+                );
+            const fileInfo = queryResult.rows[0];
 
             // On delete la ligne en base
+            await client.query(
+                'DELETE FROM filestore WHERE id = $1',
+                [id]
+            );
 
             // On supprime le fichier
-            // await fs.promises.unlink('data/upload' + fileInfo.filename);
+            await fs.promises.unlink('data/upload/' + fileInfo['file-name']);
+            return await this.validateTransaction(client);
 
         } catch (error) {
             await this.abortTransaction(client);
