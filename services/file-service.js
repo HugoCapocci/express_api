@@ -9,11 +9,11 @@ module.exports = class FileService {
         const client = await this.pool.connect();
 
         await client.query(
-            'INSERT INTO filestore("file-name", "mime-type", size, encoding)',
-            'VALUES ($1, $2, $3, $4)',
+            'INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding)'+
+            'VALUES ($1, $2, $3, $4, $5)',
             [
                 fileInfo.filename,
-                fileInfo.mimtype,
+                fileInfo.mimetype,
                 fileInfo.originalname,
                 fileInfo.size,
                 fileInfo.encoding
