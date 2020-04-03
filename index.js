@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const basicAuth = require("./middleware/basic-auth").basicAuth;
 const MessageService = require("./services/message-service");
+const FileService = require("./services/file-service");
 require("dotenv").config();
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(bodyParser.json());
 app.use("/api/v1", v1);
 
 const messageService = new MessageService();
+const fileService = new FileService();
 
 v1.get("/message", async (request, response) => {
   const quotes = await messageService.getMessages();
@@ -75,6 +77,18 @@ v1.delete("/message/:id", basicAuth, async (request, response) => {
     }
   } catch (error) {
     response.sendStatus(400);
+  }
+});
+
+const multer = require("multer");
+const upload = multer({ dest: "data/upload" });
+
+v1.post("/file", upload.single("myFile"), async (request, response) => {
+  try {
+    await fileService.saveFileInfo(request.file);
+    response.send(201);
+  } catch (error) {
+    response.sendStatus(500);
   }
 });
 
