@@ -122,8 +122,8 @@ v1.get('/file/:id', async (request, response) => {
 v1.delete('/file/:id', async (request, response) => {
     const id = request.params.id;
     try {
-        await fileService.deleteFile(id);
-            response.sendStatus(200);
+        const fileResult = await fileService.deleteFile(id);
+            fileResult ? response.sendStatus(200) : response.sendStatus(404);
     } catch (error) {
         console.log('Erreur : ',error);
         response.sendStatus(500);
