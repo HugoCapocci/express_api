@@ -1,6 +1,15 @@
 const { MongoClient, ObjectId } = require("mongodb");
 
 module.exports = class MessageService {
+  static isMessageValid(message) {
+    return (
+      message.quote &&
+      message.quote.length > 0 &&
+      message.author &&
+      message.author.length > 0
+    );
+  }
+
   getConnectedClient() {
     const client = new MongoClient(process.env.DATABASE_URL, {
       useNewUrlParser: true,
@@ -60,5 +69,25 @@ module.exports = class MessageService {
     await client.close();
 
     return result.deletedCount === 1;
+  }
+
+  async updateMessage(id, message) {
+    const client = await this.getConnectedClient();
+    const collection = client
+      .db(process.env.DATABASE_NAME)
+      .collection("messages");
+
+    const updatedMessage = await collection.updateOne(
+      { _id: ObjectId(id) },
+      { $set: message },
+      { returnOriginal: false }
+    );
+
+    await client.close();
+
+    return {
+      isFind: updatedMessage.matchedCount == 1,
+      isModified: updatedMessage.modifiedCount == 1
+    };
   }
 };

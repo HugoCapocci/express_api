@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require("fs").promises;
 const basicAuth = require("./middleware/basic-auth").basicAuth;
 const MessageService = require("./services/message-service");
 require("dotenv").config();
@@ -39,16 +38,29 @@ v1.get("/message/:id", async (request, response) => {
 v1.post("/message", basicAuth, async (request, response) => {
   const message = request.body;
 
-  const isValid =
-    message.quote &&
-    message.quote.length > 0 &&
-    message.author &&
-    message.author.length > 0;
+  const isValid = MessageService.isMessageValid(message);
 
   if (!isValid) return response.sendStatus(400);
 
   const createdMessage = await messageService.createMessage(message);
   response.send(createdMessage);
+});
+
+v1.put("/message/:id", basicAuth, async (request, response) => {
+  try {
+    const id = request.params.id;
+    const message = request.body;
+
+    const isValid = MessageService.isMessageValid(message);
+    if (!isValid) return response.sendStatus(400);
+
+    const updatedMessage = await messageService.updateMessage(id, message);
+
+    if (!updatedMessage.isFind) return response.sendStatus(404);
+    updatedMessage.isModified ? response.send(200) : response.sendStatus(304);
+  } catch (error) {
+    response.sendStatus(400);
+  }
 });
 
 v1.delete("/message/:id", basicAuth, async (request, response) => {
@@ -65,6 +77,7 @@ v1.delete("/message/:id", basicAuth, async (request, response) => {
     response.sendStatus(400);
   }
 });
+
 app.listen(3000, () => {
   console.log("Server listening…");
 });
