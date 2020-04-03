@@ -78,6 +78,14 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
     }
 });
 
+const multer = require('multer');
+// on spécifie un dossier sur le serveur ou on va recevoir les fichiers par POST
+const upload = multer({dest: 'data/upload'});
+v1.post('/file',upload.single('myFile') , (request, response) => {
+    console.log(request.file);
+    response.sendStatus(200);
+});
+
 app.listen(3000, () => {
     console.log('app is running on port 3000');
 });
