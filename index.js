@@ -38,13 +38,8 @@ v1.get('/message/:id', async (request, response) => {
 
 v1.post('/message', basicAuth, async (request, response) => {
   const message = request.body;
-  const isValid =
-    message.quote &&
-    message.quote.length > 0 &&
-    message.author &&
-    message.author.length > 0;
 
-  if (!isValid) {
+  if (!MessageService.isMessageValid(request.body)) {
     return response.sendStatus(500);
   }
 
@@ -64,6 +59,24 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
       request.params.id,
     );
     response.sendStatus(deletedMessage ? 200 : 204);
+  } catch (err) {
+    response.sendStatus(400);
+  }
+});
+
+v1.put('/message/:id', basicAuth, async (request, response) => {
+  if (!MessageService.isMessageValid(request.body)) {
+    return response.sendStatus(500);
+  }
+  try {
+    const updatedMessage = await messageService.updateMessage(
+      request.body,
+      request.params.id,
+    );
+    if (!updatedMessage.isFind) {
+      response.sendStatus(404);
+    }
+    response.sendStatus(updatedMessage.isModified ? 200 : 304);
   } catch (err) {
     response.sendStatus(400);
   }

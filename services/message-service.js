@@ -2,6 +2,15 @@ require('dotenv').config();
 const { MongoClient, ObjectID } = require('mongodb');
 
 module.exports = class MessageService {
+  static isMessageValid(message) {
+    return (
+      message.quote &&
+      message.quote.length > 0 &&
+      message.author &&
+      message.author.length > 0
+    );
+  }
+
   getConnectedClient() {
     const client = new MongoClient(process.env.MONGO_CONNECTION_URL, {
       useNewUrlParser: true,
@@ -35,6 +44,27 @@ module.exports = class MessageService {
     await client.close();
 
     return message;
+  }
+
+  async updateMessage(message, id) {
+    const client = await this.getConnectedClient();
+    const collection = client.db(process.env.MONGO_DB).collection('messages');
+
+    const query = {
+      _id: ObjectID(id),
+    };
+
+    const updateQuery = {
+      $set: message,
+    };
+
+    const updatedMessage = await collection.updateOne(query, updateQuery);
+    await client.close();
+
+    return {
+      isFind: updatedMessage.matchedCount === 1,
+      isModified: updatedMessage.modifiedCount === 1,
+    };
   }
 
   async deleteMessage(id) {
