@@ -4,10 +4,14 @@ const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 require('dotenv').config();
-
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const multer = require('multer');
+// on spécifie un dossier, sur le serveur, ou recevoir les fichiers envoyés par POST
+const upload = multer({ dest: 'data/upload/' });
+const FileService = require('./services/file-service');
+const fileService = new FileService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -63,6 +67,46 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
     } catch (e) {
         console.log(e);
         response.sendStatus(400);
+    }
+});
+
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    try {
+        await fileService.saveFileInfos(request.file);
+        response.sendStatus(200);
+    } catch (e) {
+        response.sendStatus(500);
+    }
+    
+});
+
+v1.get('/file', async (request, response) => {
+    try {
+        const filesInfo = await fileService.getFilesInfo();
+        response.send(filesInfo);
+    } catch (e) {
+        console.log(e);
+        response.sendStatus(500);
+    }
+});
+
+v1.get('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const fileResult = await fileService.getFile(id);
+        if (fileResult) {
+            response.setHeader(
+                'Content-Disposition', 
+                'attachment; filename=' + fileResult.fileInfo['original-name']
+            );
+            response.setHeader('Content-Type', fileResult.fileInfo['mimetype']);
+            response.setHeader('Content-Length', fileResult.fileInfo['mimetype']);
+            // on envoie le flux du fichier
+            fileResult.file.pipe(response);
+        } else response.sendStatus(404);
+    } catch (e) {
+        console.log(e);
+        response.sendStatus(500);
     }
 });
 
