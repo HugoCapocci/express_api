@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const fs = require('fs').promises;
+const fs = require('fs');
 
 module.exports = class FileService {
     constructor() {
@@ -41,8 +41,36 @@ module.exports = class FileService {
         } catch(e) {
             await this.abortTransaction(client);
             // on veut supprimer le fichier dans data/upload
-            await fs.unlink('./data/upload/' + fileInfo.filename);
+            await fs.promises.unlink('./data/upload/' + fileInfo.filename);
             throw e;
+        }
+    }
+
+    async getAllFiles() {
+        const client = await this.pool.connect();
+        const queryResult = await client.query('SELECT * FROM filestore');
+
+        client.release();
+        return queryResult.rows;
+    }
+
+    async getFileById(id) {
+        const client = await this.pool.connect();
+        const queryResult = await client.query(
+            'SELECT * FROM filestore WHERE id=$1',
+            [ id ]
+            );
+        
+        client.release();
+        
+        if (queryResult.rowCount === 0)
+            return null;
+        const fileInfo = queryResult.rows[0];
+        const file = fs.createReadStream('./data/upload/' + fileInfo['file-name']);
+        
+        return {
+            fileInfo,
+            file
         }
     }
 }
