@@ -122,6 +122,18 @@ v1.get("/file/:id", async (request, response) => {
   }
 });
 
+v1.delete("/file/:id", async (request, response) => {
+  const id = request.params.id;
+
+  try {
+    const res = await fileService.deleteFile(id);
+    res ? response.send(204) : response.send(404);
+  } catch (error) {
+    console.error(error);
+    response.sendStatus(500);
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server listening…");
 });

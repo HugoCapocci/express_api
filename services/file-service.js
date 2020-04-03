@@ -75,4 +75,30 @@ module.exports = class FileService {
       fileByte
     };
   }
+
+  async deleteFile(id) {
+    const client = await this.openTransaction();
+
+    try {
+      const client = await this.openTransaction();
+
+      const fileResult = await client.query(
+        "SELECT * FROM filestore WHERE id=$1",
+        [id]
+      );
+
+      if (fileResult.rowCount === 0) return null;
+
+      await client.query("DELETE FROM filestore WHERE id=$1", [id]);
+
+      await fs.unlink(`data/upload/${fileResult.rows[0]["file-name"]}`);
+
+      await this.validateTransaction(client);
+
+      return true;
+    } catch (error) {
+      await this.abortTransaction(client);
+      throw error;
+    }
+  }
 };
