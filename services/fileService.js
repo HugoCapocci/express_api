@@ -66,7 +66,9 @@ module.exports = class FileService {
         if (queryResult.rowCount === 0)
             return null;
         const fileInfo = queryResult.rows[0];
-        const file = fs.createReadStream('./data/upload/' + fileInfo['file-name']);
+        const path = './data/upload/' + fileInfo['file-name'];
+        console.log(path);
+        const file = fs.createReadStream(path);
         
         return {
             fileInfo,

@@ -161,7 +161,6 @@ v1.get('/file/:id', async (req, res) => {
             res.setHeader('Content-length', fileResult.fileInfo.size);
             // envoie le flux du fichier
             fileResult.file.pipe(res);
-            res.sendStatus(200);
         } else
             res.sendStatus(404);
     } catch(e) {
