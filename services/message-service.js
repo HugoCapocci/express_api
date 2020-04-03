@@ -48,4 +48,17 @@ module.exports = class MessageService {
 
     return quote;
   }
+
+  async deleteMessage(id) {
+    const client = await this.getConnectedClient();
+    const collection = client
+      .db(process.env.DATABASE_NAME)
+      .collection("messages");
+
+    const result = await collection.deleteOne({ _id: ObjectId(id) });
+
+    await client.close();
+
+    return result.deletedCount === 1;
+  }
 };
