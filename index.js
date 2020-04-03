@@ -11,6 +11,10 @@ const messageService = new MessageService();
 const FileService = require('./services/fileService');
 const fileService = new FileService();
 
+const multer = require('multer');
+// on spécifie un dossier sur le serveur ou recevoir les fichiers envoyés par POST
+const upload = multer({ dest: 'data/upload/' });
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/api/v1', v1);
@@ -124,13 +128,14 @@ v1.put('/message/:id', basicAuth, async (req, res) => {
     }
 });
 
-const multer = require('multer');
-// on spécifie un dossier sur le serveur ou recevoir les fichiers envoyés par POST
-const upload = multer({ dest: 'data/upload/' });
-
-v1.post('/file',upload.single('myFile'), (req, res) => {
-    console.log(req.file);
-    res.sendStatus(200);
+v1.post('/file',upload.single('myFile'), async (req, res) => {
+    try {
+        await fileService.saveFileInfos(req.file);
+        res.sendStatus(200);
+    } catch(e) {
+        res.sendStatus(500);
+    }
+    
 });
 
 app.listen(3000, () => {
