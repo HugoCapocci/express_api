@@ -92,6 +92,36 @@ v1.post("/file", upload.single("myFile"), async (request, response) => {
   }
 });
 
+v1.get("/file", async (request, response) => {
+  try {
+    const files = await fileService.getFilesInfo();
+    response.send(files);
+  } catch (error) {
+    response.sendStatus(500);
+  }
+});
+
+v1.get("/file/:id", async (request, response) => {
+  try {
+    const id = request.params.id;
+    const fileResult = await fileService.getFileInfo(id);
+
+    if (fileResult) {
+      response.setHeader(
+        "Content-disposition",
+        `attachment; filename=${fileResult.fileInfo["original-name"]}`
+      );
+      response.setHeader("Content-type", fileResult.fileInfo["mime-type"]);
+      response.setHeader("Content-length", fileResult.fileInfo["size"]);
+      fileResult.fileByte.pipe(response);
+    } else {
+      response.sendStatus(404);
+    }
+  } catch (error) {
+    response.sendStatus(500);
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server listening…");
 });

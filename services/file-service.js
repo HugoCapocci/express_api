@@ -1,5 +1,6 @@
 const { Pool } = require("pg");
 const fs = require("fs").promises;
+const fss = require("fs");
 
 module.exports = class FileService {
   constructor() {
@@ -44,5 +45,34 @@ module.exports = class FileService {
       await fs.unlink(`data/upload/${fileInfo.filename}`);
       throw error;
     }
+  }
+
+  async getFilesInfo() {
+    const client = await this.openTransaction();
+    const files = await client.query("SELECT * FROM filestore");
+
+    client.release();
+    return files.rows;
+  }
+
+  async getFileInfo(id) {
+    const client = await this.openTransaction();
+    const file = await client.query("SELECT * FROM filestore WHERE id=$1", [
+      id
+    ]);
+
+    client.release();
+
+    if (file.rowCount === 0) return null;
+
+    const fileInfo = file.rows[0];
+    const fileByte = fss.createReadStream(
+      `data/upload/${fileInfo["file-name"]}`
+    );
+
+    return {
+      fileInfo,
+      fileByte
+    };
   }
 };
