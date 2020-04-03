@@ -99,13 +99,22 @@ v1.get('/file/:id', async (req, res) => {
             res.setHeader('Content-length', fileResult.fileInfo.size);
             //send file stream
             fileResult.file.pipe(res);
-            // res.sendStatus(200);
         } else
             res.sendStatus(404);
     } catch (error) {
         res.sendStatus(500);
-    }
+    };
 });
+
+v1.delete('/file/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        await fileService.deleteFile(id);
+        res.sendStatus(200);
+    } catch (error) {
+        res.sendStatus(500);
+    }
+})
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');

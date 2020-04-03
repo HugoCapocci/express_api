@@ -30,8 +30,6 @@ class FileService {
     saveFileInfo = async (fileInfo) => {
         const client = await this.openTransaction();
 
-        console.log(fileInfo.filename)
-
         try {
             await client.query(
                 'INSERT INTO filestore("file-name", "mime-type", "original-name", size, encoding) ' +
@@ -74,6 +72,24 @@ class FileService {
         return {
             fileInfo,
             file
+        };
+    };
+
+    deleteFile = async (id) => {
+        const client = await this.openTransaction();
+
+        try {
+            // on récup les métadatas (à minima "file-name")
+            const queryResult = await client.query('SELECT * FROM filestore WHERE id=$1', [id]);
+            const fileInfo = queryResult.rows[0];
+            // on delete la ligne en base
+            await client.query('DELETE FROM filestore WHERE id=$1', [id]);
+            // on supprime le fichier
+            await fs.promises.unlink(`data/upload/${fileInfo['file-name']}`);
+            return await this.validateTransaction(client);
+        } catch (error) {
+            await this.abortTransaction(client);
+            throw error;
         }
     }
 };
