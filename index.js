@@ -34,11 +34,7 @@ v1.get('/message/:id', async (request, response) => {
 v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
 
-    // un message  est valide si il a un auteur et une citation
-    const isValid = message.quote && message.quote.length > 0
-     && message.author && message.author.length > 0;
-    
-    if (!isValid) return response.sendStatus(400);
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
 
     // on sauvegarde dans Mongo
     const createdMessage = await messageService.createMessage(message);
@@ -52,6 +48,20 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
         const isDeleted = await messageService.deleteMessage(id);
         isDeleted ? response.sendStatus(204) : response.sendStatus(404);
     } catch(e) {
+        response.sendStatus(400);
+    }
+});
+
+v1.put('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    const message = request.body;
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    try {
+        const result = await messageService.updateMessage(message, id);
+        if (!result.isFind) return response.sendStatus(404);
+        result.isModified ? response.sendStatus(200) : response.sendStatus(304);
+    } catch (e) {
+        console.log(e);
         response.sendStatus(400);
     }
 });
