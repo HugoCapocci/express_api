@@ -7,6 +7,10 @@ const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 
+//Pour la gestion des fichiers
+const FileService = require ('./services/file-service');
+const fileService = new FileService();
+
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 
 app.use(bodyParser.urlencoded({ extended: false }));
