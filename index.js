@@ -84,6 +84,38 @@ v1.post('/file', upload.single('myFile'), async (request, response) => {
     }
 });
 
+v1.get('/file', async (request, response) => {
+    try {
+        const filesInfo = await fileService.getFilesInfo();
+        response.send(filesInfo);
+    } catch(e) {
+        console.log('error ocurs ', e);
+        response.sendStatus(500);
+    }
+});
+
+// id == id en base de données !
+v1.get('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const fileResult = await fileService.getFile(id);
+        if (fileResult) {
+            response.setHeader(
+                'Content-disposition',
+                'attachment; filename=' + fileResult.fileInfo['original-name']
+            );
+            response.setHeader('Content-type', fileResult.fileInfo['mime-type']);
+            response.setHeader('Content-length', fileResult.fileInfo.size);
+            // on envoit le flux du fichier
+            fileResult.file.pipe(response);
+        } else
+            response.sendStatus(404);
+    } catch(e) {
+        console.log('error ocurs ', e);
+        response.sendStatus(500);
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
