@@ -1,9 +1,16 @@
 import express from 'express';
 
-import basicAuth from './middleware/basic-auth.js';
+import multer from 'multer';
+// specify a directory, on server, where received post files will go
+const upload = multer({ dest: 'data/upload/' });
+
+import basicAuth from './middlewares/basic-auth.js';
 
 import MessageService from './services/message.js';
 const messageService = new MessageService();
+
+import FileService from './services/file.js';
+const fileService = new FileService();
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -37,6 +44,11 @@ v1.post('/message', basicAuth, async (req, res) => {
     const createdMessage = await messageService.createMessage(message);
     res.send(createdMessage);
 });
+
+v1.post('/file', upload.single('myFile'), async (req, res) => {
+    await fileService.saveFileInfo(req.file);
+    res.sendStatus(200);
+})
 
 v1.put('/message/:id', basicAuth, async (req, res) => {
     const id = req.params.id;

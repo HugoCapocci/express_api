@@ -7,19 +7,19 @@ class MessageService {
         return message.quote && message.author;
     }
 
-    getConnectedService() {
+    getConnectedService = () => {
         const client = new MongoClient(
-            process.env.DATABASE_URL,
+            process.env.MONGO_DATABASE_URL,
             { useNewUrlParser: true, useUnifiedTopology: true }
         );
 
         return client.connect();
     };
 
-    async createMessage(message) {
+    createMessage = async (message) => {
         const client = await this.getConnectedService();
 
-        const collection = client.db(process.env.DATABASE_NAME).collection('messages')
+        const collection = client.db(process.env.MONGO_DATABASE_NAME).collection('messages')
         const resultMessage = await collection.insertOne(message);
 
         await client.close();
@@ -27,10 +27,10 @@ class MessageService {
         return resultMessage;
     };
 
-    async getMessages() {
+    getMessages = async () => {
         const client = await this.getConnectedService();
 
-        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        const collection = client.db(process.env.MONGO_DATABASE_NAME).collection('messages');
         const quotes = await collection.find({}).toArray();
 
         await client.close();
@@ -38,10 +38,10 @@ class MessageService {
         return quotes;
     };
 
-    async getMessage(id) {
+    getMessage = async (id) => {
         const client = await this.getConnectedService();
 
-        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        const collection = client.db(process.env.MONGO_DATABASE_NAME).collection('messages');
         const quote = await collection.findOne({ _id: mongodb.ObjectID(id) });
 
         await client.close();
@@ -49,10 +49,10 @@ class MessageService {
         return quote;
     };
 
-    async updateMessage(id, message) {
+    updateMessage = async (id, message) => {
         const client = await this.getConnectedService();
 
-        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        const collection = client.db(process.env.MONGO_DATABASE_NAME).collection('messages');
         // const result = await collection.findOneAndUpdate(
         const result = await collection.updateOne(
             { _id: mongodb.ObjectID(id) },
@@ -67,10 +67,10 @@ class MessageService {
         };
     };
 
-    async deleteMessage(id) {
+    deleteMessage = async (id) => {
         const client = await this.getConnectedService();
 
-        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        const collection = client.db(process.env.MONGO_DATABASE_NAME).collection('messages');
         const result = await collection.deleteOne({ _id: mongodb.ObjectID(id) });
 
         await client.close();
