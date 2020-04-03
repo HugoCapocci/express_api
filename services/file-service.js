@@ -78,4 +78,22 @@ module.exports = class FileService {
             file
         }
     }
+
+    async deleteFile(id) {
+        const client = await this.openTransaction();
+
+        try {
+
+            // On récupère les metadata (à minima 'file-name')
+
+            // On delete la ligne en base
+
+            // On supprime le fichier
+            // await fs.promises.unlink('data/upload' + fileInfo.filename);
+
+        } catch (error) {
+            await this.abortTransaction(client);
+            throw error;
+        }
+    }
 }

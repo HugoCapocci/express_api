@@ -119,6 +119,17 @@ v1.get('/file/:id', async (request, response) => {
     }
 });
 
+v1.delete('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        await fileService.getFile(id);
+        
+            response.sendStatus(200);
+    } catch (error) {
+        console.log('Erreur : ',error);
+        response.sendStatus(500);
+    }
+});
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
 });
