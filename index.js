@@ -3,10 +3,16 @@ const bodyParser = require('body-parser');
 const app = express();
 const v1 = express.Router();
 require('dotenv').config();
-
+const multer = require('multer');
+//on spécifie un dossier, sur le serveur, ou recevoir les fichier envoyés par POST
+const upload = multer({ dest: 'data/upload/' });
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/file-service');
+const fileService = new FileService();
+
+// log fileService et FileService si error
 
 // toujours garder bodyParser en premier dans les appels à use()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -67,6 +73,11 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
         console.log('error occurs : ', e);
         response.sendStatus(400);
     }
+});
+
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+    await fileService.saveFileInfos(request.file);
+    response.sendStatus(200);
 });
 
 app.listen(3000, () => {
