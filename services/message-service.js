@@ -63,4 +63,15 @@ module.exports = class MessageService {
         return result;
     }
 
+    //Modifie le message ayant l'id passé en paramètre 
+    static async update(id, message) {
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+
+        const result = await collection.findOneAndUpdate({_id: id}, message)
+
+        await client.close();
+        return(result);
+    }
+
 }
