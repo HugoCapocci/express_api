@@ -61,7 +61,7 @@ v1.delete('/message/:id', basicAuth, async (req, res) => {
     }
 });
 
-v1.put('/message/:id',  async (req, res) => {
+v1.put('/message/:id', basicAuth, async (req, res) => {
     const id = req.params.id;
     const message = req.body;
 

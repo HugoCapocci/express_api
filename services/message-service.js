@@ -68,7 +68,7 @@ module.exports = class MessageService {
         const client = await this.getConnectedClient();
         const collection = client.db(process.env.MONGO_DB).collection('messages');
 
-        const result = await collection.findOneAndUpdate({_id: id}, message)
+        const result = await collection.findOneAndUpdate({_id: new ObjectID(id)}, {$set : message})
 
         await client.close();
         return(result);
