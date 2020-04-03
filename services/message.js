@@ -2,6 +2,11 @@ import mongodb from "mongodb";
 const { MongoClient } = mongodb
 
 class MessageService {
+
+    static isMessageValid = (message) => {
+        return message.quote && message.author;
+    }
+
     getConnectedService() {
         const client = new MongoClient(
             process.env.DATABASE_URL,
@@ -42,6 +47,24 @@ class MessageService {
         await client.close();
 
         return quote;
+    };
+
+    async updateMessage(id, message) {
+        const client = await this.getConnectedService();
+
+        const collection = client.db(process.env.DATABASE_NAME).collection('messages');
+        // const result = await collection.findOneAndUpdate(
+        const result = await collection.updateOne(
+            { _id: mongodb.ObjectID(id) },
+            { $set: message }
+        );
+
+        await client.close();
+
+        return {
+            isFind: result.matchedCount == 1,
+            isModified: result.modifiedCount == 1
+        };
     };
 
     async deleteMessage(id) {

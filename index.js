@@ -33,10 +33,22 @@ v1.get('/message/:id', async (req, res) => {
 
 v1.post('/message', basicAuth, async (req, res) => {
     const message = req.body;
-    const isValid = message.quote && message.author;
-    if (!isValid) return res.sendStatus(400);
+    if (!MessageService.isMessageValid(message)) return res.sendStatus(400);
     const createdMessage = await messageService.createMessage(message);
     res.send(createdMessage);
+});
+
+v1.put('/message/:id', basicAuth, async (req, res) => {
+    const id = req.params.id;
+    const message = req.body;
+    if (!MessageService.isMessageValid(message)) return res.sendStatus(400);
+    try {
+        const result = await messageService.updateMessage(id, message);
+        if (!result.isFind) res.sendStatus(404);
+        result.isModified ? res.sendStatus(200) : res.sendStatus(202);
+    } catch (error) {
+        res.sendStatus(400);
+    }
 });
 
 v1.delete('/message/:id', basicAuth, async (req, res) => {
