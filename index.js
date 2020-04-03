@@ -1,16 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+
+//On instacie un MessageService pour la gestion des messages
 const MessageService = require('./services/message-service');
 
 const fs = require('fs').promises;
 const app = express();
 const v1 = express.Router();
 
-//Pour la gestion des fichiers
+//On instacie un FileService pour la gestion des fichiers
 const FileService = require ('./services/file-service');
 const fileService = new FileService();
 
+//For Basic Auth gestiure
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -53,6 +56,7 @@ v1.post('/message', basicAuth, async (request, response) =>{
     response.send(createdMessage);
 });
 
+//Deleting function
 v1.delete('/message/:id', basicAuth, async (req, res) => {
     const id = req.params.id;
     
@@ -65,6 +69,7 @@ v1.delete('/message/:id', basicAuth, async (req, res) => {
     }
 });
 
+//Update function
 v1.put('/message/:id', basicAuth, async (req, res) => {
     const id = req.params.id;
     const message = req.body;
@@ -74,10 +79,12 @@ v1.put('/message/:id', basicAuth, async (req, res) => {
     res.send(updatedMessage);
 });
 
+//Multer for manipulating files
 const multer = require('multer');
 //on spécifie un dossier ou recevoir les fichiers 
 const upload = multer({dest: 'data/upload/'});
 
+//Create the file reference in database
 v1.post('/file',upload.single('myFile'), (req, res) => {
     console.log(req.file);
     res.sendStatus(200);
