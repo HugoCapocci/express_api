@@ -59,6 +59,25 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
     }
 });
 
+v1.put('/message/:id', basicAuth, async (request, response) => {
+    const id = request.params.id;
+    const message = request.body;
+    console.log(id);
+    console.log(message);
+    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    try {
+        const result = await messageService.updateMessage(message, id);
+        if (!result.isFind) return response.sendStatus(404);
+        // 304 ou 202  3xx corespond a des redirections
+        result.isModified ? response.sendStatus(200) : response.sendStatus(304);
+        // ? response.sendStatus(200) : response.sendStatus(404);
+    }
+    catch (e) {
+        console.log('error occured: ', e);
+        response.sendStatus(400);
+    }
+});
+
 app.listen(3000, () => {
     console.log('app is running on port 3000');
 });
