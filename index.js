@@ -8,6 +8,8 @@ require('dotenv').config();
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/messageService');
 const messageService = new MessageService();
+const FileService = require('./services/fileService');
+const fileService = new FileService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -58,19 +60,24 @@ v1.get('/message/:id', async (req, res) => {
 
 v1.post('/message', basicAuth, async (req, res) => {
     const message = req.body;
-    // un message est valide s'il a un auteur et une citation
-    console.log('message?', message);
 
-    const isValid = message.quote && message.quote.length > 0
-        && message.author && message.author.length > 0;
-    
+    /* Déclarer dans le service */
+    //const isValid = message.quote && message.quote.length > 0
+    //   && message.author && message.author.length > 0;
     // si pas valide :
-    if (!isValid)
+    //if (!isValid)
+    //   return res.sendStatus(400);
+
+    // j'appelle la fonction pour la validation d'un message dans le service
+    if (!MessageService.isMessageValid(message))
         return res.sendStatus(400);
+
 
     const createMessage = await messageService.createMessage(message);
 
     res.send(createMessage);
+
+    /* Code pour un fichier JSON */
     // const quotes = await fs.readFile('./data/quotes.json');
     // const quoteArray = JSON.parse(quotes);
     // quoteArray.sort((quoteA, quoteB) => quoteB.id - quoteA.id);
@@ -100,6 +107,30 @@ v1.delete('/message/:id', basicAuth, async (req, res) => {
         res.sendStatus(400);
     } 
 
+});
+
+v1.put('/message/:id', basicAuth, async (req, res) => {
+    const id = req.params.id;
+    const message = req.body;
+    if (!MessageService.isMessageValid(message))
+        return res.sendStatus(400);
+    try {
+        const result = await messageService.updateMessageById(message, id);
+        if (!result.isFind)
+            res.sendStatus(404);
+        result.isModified ? res.sendStatus(200) : res.sendStatus(304);
+    } catch(e) {
+        res.sendStatus(400);
+    }
+});
+
+const multer = require('multer');
+// on spécifie un dossier sur le serveur ou recevoir les fichiers envoyés par POST
+const upload = multer({ dest: 'data/upload/' });
+
+v1.post('/file',upload.single('myFile'), (req, res) => {
+    console.log(req.file);
+    res.sendStatus(200);
 });
 
 app.listen(3000, () => {

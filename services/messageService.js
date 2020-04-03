@@ -7,6 +7,12 @@ const { MongoClient, ObjectID } = require('mongodb');
 
 module.exports = class MessageService {
 
+    // un message est valide s'il a un auteur et une citation
+    static isMessageValid(message) {
+        return message.quote && message.quote.length > 0
+        && message.author && message.author.length > 0;
+    }
+
     // retourne une connection qu'il faudra fermer à chaque fois
     getConnectedClient() {
         const client = new MongoClient(
@@ -55,4 +61,21 @@ module.exports = class MessageService {
         return result.deletedCount === 1;
     }
 
+    async updateMessageById(message, id) {
+        const client = await this.getConnectedClient();
+        const collection = client.db(process.env.MONGO_DB).collection('messages');
+        const query = {
+            _id: ObjectID(id),
+        };
+        const updateQuery = {
+            $set: message
+        }
+        const result = await collection.updateOne(query, updateQuery);
+
+        await client.close();
+        return {
+            isFind: result.matchedCount == 1,
+            isModified: result.modifiedCount == 1
+        }
+    }
 };
