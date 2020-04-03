@@ -41,10 +41,41 @@ module.exports = class FileService {
         } catch (error) { 
             await this.abortTransaction(client);
             // On veut supprimer le fichier dans 'data/upload'
-            await fs.unlink('data/upload/' + fileInfo.filename)
+            await fs.promises.unlink('data/upload/' + fileInfo.filename)
             throw error; //
         }
         
 
+    }
+
+    async getFilesInfo() {
+        const client = await this.pool.connect();
+        const queryResult = await client.query('SELECT * FROM filestore');
+
+        client.release();
+        return queryResult.rows;
+    }
+
+    async getFile(id) {
+        const client = await this.pool.connect();
+        const queryResult = await client.query(
+            'SELECT * FROM filestore WHERE id = $1',
+            [id]
+            );
+        
+        client.release();
+
+        if(queryResult.rowCount === 0) return null;
+
+        // Metadata
+        const fileInfo = queryResult.rows[0];
+        const path = 'data/upload/' + fileInfo['file-name'];
+        console.log('Chemin : ',path)
+        const file = fs.createReadStream(path);
+        // Return file
+        return {
+            fileInfo,
+            file
+        }
     }
 }
