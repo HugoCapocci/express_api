@@ -79,8 +79,14 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
 
 
 v1.post('/file', upload.single(/* Nom de l'imput file quand il y a un formulaire */ 'myFile') , async (request, response) => {
-    await fileService.saveFileInfos(request.file);
-    response.sendStatus(200);
+    try {
+        await fileService.saveFileInfos(request.file);
+        response.sendStatus(200);
+    } catch (error) {
+        response.sendStatus(500);
+    }
+    
+    
 });
 
 app.listen(3000, () => {
