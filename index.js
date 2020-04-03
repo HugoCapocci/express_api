@@ -2,11 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const v1 = express.Router();
+const multer = require('multer');
 require('dotenv').config();
+// On spécifie un dossier, sur le serveur, ou reçevoir les fichiers envoyés par POST
+const upload = multer({ dest : 'data/upload/'})
 
 const basicAuth = require('./middleware/basic-auth').basicAuth;
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/file-service');
+const fileService = new FileService();
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
@@ -33,18 +38,18 @@ v1.get('/message/:id', async (request, response) => {
     }
     
    
-})
+});
 
 v1.post('/message', basicAuth, async (request, response) => {
     const message = request.body;
 
     //Si pas valide
-    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    if (!messageService.isMessageValid(message)) return response.sendStatus(400);
     
     // On sauvegarde dans Mongo !
     const createdMessage = await messageService.createMessage(message)
     response.send(createdMessage);
-})
+});
 
 v1.delete('/message/:id', basicAuth, async (request, response) => {
     const id = request.params.id;
@@ -55,12 +60,12 @@ v1.delete('/message/:id', basicAuth, async (request, response) => {
         response.sendStatus(400);
     }
    
-})
+});
 
 v1.put('/message/:id', basicAuth, async (request, response) => {
     const message = request.body;
     const id = request.params.id;
-    if (!MessageService.isMessageValid(message)) return response.sendStatus(400);
+    if (!messageService.isMessageValid(message)) return response.sendStatus(400);
     try {
         const result = await messageService.updateMessage(message, id);
         if(!result.isFind) return response.sendStatus(404);
@@ -69,8 +74,15 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
         console.log('Erreur : ' , error);
         response.sendStatus(400);
     }
-})
+});
+
+
+
+v1.post('/file', upload.single(/* Nom de l'imput file quand il y a un formulaire */ 'myFile') , async (request, response) => {
+    await fileService.saveFileInfos(request.file);
+    response.sendStatus(200);
+});
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000 !')
-})
+});
