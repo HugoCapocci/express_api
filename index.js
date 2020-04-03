@@ -85,8 +85,8 @@ const multer = require('multer');
 const upload = multer({dest: 'data/upload/'});
 
 //Create the file reference in database
-v1.post('/file',upload.single('myFile'), (req, res) => {
-    console.log(req.file);
+v1.post('/file',upload.single('myFile'), async (req, res) => {
+    await fileService.saveFileInfo(req.file);
     res.sendStatus(200);
 });
 
