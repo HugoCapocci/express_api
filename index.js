@@ -1,14 +1,18 @@
 const express = require('express');
 const fs = require('fs').promises;
 const bodyParser = require('body-parser');
+const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
 const v1 = express.Router();
 const port = process.env.PORT || 3000;
 const basicAuth = require('./middleware/basic-auth').basicAuth;
+const upload = multer({ dest: 'data/upload/' });
 const MessageService = require('./services/message-service');
 const messageService = new MessageService();
+const FileService = require('./services/file-service');
+const fileService = new FileService();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -82,4 +86,55 @@ v1.put('/message/:id', basicAuth, async (request, response) => {
   }
 });
 
+v1.post('/file', upload.single('myFile'), async (request, response) => {
+  try {
+    await fileService.saveFileInfos(request.file);
+    response.sendStatus(200);
+  } catch (err) {
+    response.sendStatus(500);
+  }
+});
+
+v1.get('/file', async (request, response) => {
+  try {
+    const filesInfo = await fileService.getFilesInfo();
+    response.send(filesInfo);
+  } catch (err) {
+    response.sendStatus(500);
+  }
+});
+
+v1.get('/file/:id', async (request, response) => {
+  try {
+    const fileResult = await fileService.getFile(request.params.id);
+
+    if (fileResult) {
+      response.setHeader(
+        'Content-disposition',
+        'attachment; filename=' + fileResult.fileInfo['original-name'],
+      );
+      response.setHeader('Content-type', fileResult.fileInfo['mime-type']);
+      response.setHeader('Content-length', fileResult.fileInfo.size);
+      // on envoit le flux du fichier
+      fileResult.file.pipe(response);
+    } else {
+      response.sendStatus(400);
+    }
+  } catch (err) {
+    response.sendStatus(500);
+  }
+});
+
+v1.delete('/file/:id', async (request, response) => {});
 app.listen(port, () => console.log(`App listning on port ${port}`));
+
+// {
+// fieldname: 'myFile',
+// originalname: 'attestation_navigo_hugo_capocci_novembre_2019.pdf',
+// encoding: '7bit',
+// mimetype: 'application/pdf',
+// destination: 'data/upload/',
+// filename: 'b12b264ed97c692e50fdf3917a1364a8',
+// path: 'data/upload/b12b264ed97c692e50fdf3917a1364a8',
+// size: 105393
+// }
