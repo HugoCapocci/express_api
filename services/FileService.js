@@ -74,5 +74,32 @@ module.exports = class FileService {
         }
     }
 
+    async deleteFile(id){
+        const client = await this.openTransaction();
+        try {
+            const client = await this.pool.connect();
+            const queryResult = await client.query('SELECT * FROM filestore WHERE id=$1', [id]);
+
+            if (queryResult.rowCount === 0) return null;
+            // on récupère les metadata a minima 'file-name'
+            const fileName = queryResult.rows[0]['file-name'];
+            console.log(queryResult.rows[0]['file-name']);
+            // on delete la ligne en base
+            const remoteDelete = await client.query('DELETE FROM filestore WHERE id=$1', [id]);
+            client.release();
+
+
+            // on supprime le fichier
+
+            await fs.promises.unlink('data/upload/' + fileName);
+            return true;
+
+
+        }catch (e) {
+            await this.abortTransaction(client);
+            throw e;//
+        }
+    }
+
 
 }

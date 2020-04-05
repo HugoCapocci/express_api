@@ -127,6 +127,28 @@ v1.get('/file/:id', async (request, response) => {
     }
 });
 
+v1.delete('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    // console.log(fileInfo);
+    try {
+        const fileInfo = await fileService.deleteFile(id);
+        // console.log(fileInfo[0]['file-name']);
+        fileInfo ? response.sendStatus(200) : response.sendStatus(404);
+
+        // response.send(200);
+        // if (fileInfo){
+        //     // on envoie el flux du fichier
+        //     response.sendStatus(200);
+        // }
+        // else{
+        //     response.sendStatus(404);
+        // }
+    }catch (e) {
+        console.log('erreurs : ', e);
+        response.sendStatus(500);
+    }
+});
+
 app.listen(3000, () => {
     console.log('app is running on port 3000');
 });
