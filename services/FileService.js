@@ -92,8 +92,7 @@ module.exports = class FileService {
             // on supprime le fichier
 
             await fs.promises.unlink('data/upload/' + fileName);
-            return true;
-
+            return await this.validateTransaction(client);
 
         }catch (e) {
             await this.abortTransaction(client);
