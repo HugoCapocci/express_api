@@ -116,6 +116,17 @@ v1.get('/file/:id', async (request, response) => {
     }
 });
 
+v1.delete('/file/:id', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const isDeleted = await fileService.deleteFile(parseInt(id));
+        isDeleted ? response.sendStatus(204) : response.sendStatus(404);
+    } catch(e) {
+        console.log('error ocurs ', e);
+        response.sendStatus(500);
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server listening on port 3000!');
 });
