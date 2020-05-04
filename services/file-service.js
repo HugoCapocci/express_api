@@ -84,7 +84,7 @@ module.exports = class FileService {
             const queryResult = await client.query('SELECT * FROM filestore WHERE id=$1', [
                 id
             ]);
-            if (queryResult.rowCount === 0) return null;
+            if (queryResult.rowCount === 0) await this.abortTransaction(client); return null;
 
             const fileInfo = queryResult.rows[0];
             //delete la ligne en base
@@ -96,8 +96,8 @@ module.exports = class FileService {
             //delete fichier
             const path = 'data/upload/' + fileInfo['file-name'];
             await fs.promises.unlink(path);
-             await this.validateTransaction(client);
-             return deletedResult.rowCount === 1;
+            await this.validateTransaction(client);
+            return deletedResult.rowCount === 1;
         } catch (e) {
             await this.abortTransaction(client);
             throw e;
