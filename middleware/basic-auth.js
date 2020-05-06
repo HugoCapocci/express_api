@@ -9,7 +9,6 @@ module.exports.basicAuth = (request, response, next) => {
 
     const authentication = decoded.split(':');
 
-
     const isValid = authentication[0] === "groingroin" && authentication[1] === "groin";
     console.log(isValid);
     //return next();

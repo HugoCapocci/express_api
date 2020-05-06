@@ -1,0 +1,22 @@
+{
+  "name": "testnodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "restaurant/index.js",
+  "scripts": {
+    "prestart": "node prestart.js",
+    "poststart": "node poststart.js",
+    "start": "node start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Maxime",
+  "license": "ISC",
+  "dependencies": {
+    "event": "^1.0.0",
+    "moment": "^2.24.0"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "jest": "^23.6.0"
+  }
+}
